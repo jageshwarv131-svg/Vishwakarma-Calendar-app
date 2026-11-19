@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="hi"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VISHWAKARMA JI – पंचांग कैलेंडर</title>
+<link href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Mukta:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e9e2d0;--card:#fffbe8;--ink:#1a1a1a;--blue:#1f2f8f;--navy:#2b2b86;--red:#d3202a;--yel:#fde85a;--gold:#ffd23d;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1a17;--ink:#f0ead8}}
+:root[data-theme="dark"]{--bg:#1b1a17;--ink:#f0ead8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);font-family:'Mukta',sans-serif;color:var(--ink);overscroll-behavior:none}
+#app{height:100%;height:100dvh;display:flex;flex-direction:column;max-width:560px;margin:auto;padding-top:env(safe-area-inset-top,0px)}
+#app.cal header{display:none}
+header{display:flex;align-items:center;gap:10px;padding:8px 14px;background:linear-gradient(#ff9a1f,#d3202a);color:#fff;border-bottom:3px solid var(--gold)}
+header .lg{width:34px;height:34px;border-radius:50%;background:radial-gradient(#ffe27a,#c47a00);display:grid;place-items:center;font-size:20px;border:2px solid #fff}
+header b{font:400 19px 'Rozha One',serif;letter-spacing:1px;display:block;line-height:1.1}
+header small{font-size:11px;opacity:.9}
+main{flex:1;position:relative;overflow:hidden;min-height:0}
+.view{position:absolute;inset:0;overflow-y:auto;display:none;padding:10px}
+.view.on{display:block}
+#v-cal{padding:0;overflow:hidden}
+nav{display:grid;grid-template-columns:repeat(3,1fr);background:var(--card);border-top:1px solid #0003;box-shadow:0 -3px 12px #0003;padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{background:0;border:0;color:#6b6f9a;padding:7px 0 5px;font:800 10.5px Mukta;display:flex;flex-direction:column;align-items:center;gap:5px}
+nav button.on{color:var(--navy)}
+.ic{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;position:relative;transition:transform .25s,box-shadow .25s}
+.ic::after{content:"";position:absolute;inset:1px 1px 50% 1px;border-radius:12px 12px 50% 50%;background:linear-gradient(#fff7,#fff0)}
+.ic svg{width:26px;height:26px;position:relative;z-index:1;filter:drop-shadow(0 2px 1px #0006)}
+.c1{background:linear-gradient(145deg,#4a52c9,#1f2f8f);box-shadow:0 4px 0 #141f63,0 8px 10px #0004}
+.c2{background:linear-gradient(145deg,#ffa63d,#d3202a);box-shadow:0 4px 0 #8f1218,0 8px 10px #0004}
+.c3{background:linear-gradient(145deg,#4cb36d,#2a8a4a);box-shadow:0 4px 0 #1b5d31,0 8px 10px #0004}
+nav button:active .ic{transform:translateY(3px);box-shadow:0 1px 0 #0006,0 2px 4px #0004}
+nav button.on .ic{animation:lift 2.4s ease-in-out infinite}
+@keyframes lift{0%,100%{transform:perspective(260px) translateY(-5px) rotateX(10deg) rotateY(-8deg)}50%{transform:perspective(260px) translateY(-8px) rotateX(10deg) rotateY(8deg)}}
+.fl{transform-origin:16px 14px;animation:fl 1.1s ease-in-out infinite alternate}
+@keyframes fl{from{transform:scale(1,1) rotate(-3deg)}to{transform:scale(.92,1.12) rotate(3deg)}}
+nav button.on .pn2{animation:wr 1.1s ease-in-out infinite alternate}
+@keyframes wr{to{transform:translate(-2px,2px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+.mh{font:400 14px 'Rozha One',serif;color:var(--navy);padding:8px 0 2px;border-bottom:2px solid var(--navy)}
+.row.now{background:#fff3b0;border-radius:8px}
+.card{background:var(--card);border:2px solid #333;border-radius:10px;padding:10px;margin-bottom:10px;color:#1a1a1a}
+.card h3{margin:-10px -10px 8px;padding:4px 10px;color:#fff;font:400 15px 'Rozha One',serif;border-radius:8px 8px 0 0;background:var(--navy)}
+.row{display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed #aaa;font-size:14px}
+.row .dd{min-width:56px;text-align:center;font:400 22px/1.1 'Rozha One',serif;color:var(--blue)}
+.row .dd small{display:block;font:700 10px 'Mukta';color:#555}
+.row.h .dd,.row.h{color:var(--red)}
+.tag{background:var(--red);color:#fff;border-radius:8px;font-size:10px;padding:0 7px;margin-left:6px;font-weight:800}
+textarea{width:100%;min-height:80px;border:1px solid #888;border-radius:8px;padding:6px;font:500 15px 'Mukta';background:repeating-linear-gradient(#fffbe8,#fffbe8 25px,#bbb 26px);line-height:26px;color:#1a1a1a}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chips button{border:2px solid var(--navy);background:var(--card);color:var(--navy);border-radius:16px;padding:4px 12px;font:800 13px 'Mukta'}
+.chips button.on{background:var(--navy);color:#fff}
+.note{font-size:11px;opacity:.75;padding:4px 2px 12px}
+.stage{position:absolute;inset:0;perspective:1200px;background:#333;overflow:hidden}
+.page{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;background:var(--card);transform-origin:top center;backface-visibility:hidden;color:#1a1a1a;box-shadow:0 6px 20px #0008}
+.top{flex:none;display:grid;grid-template-columns:1fr 82px 1fr;border-bottom:2px solid #333;font-size:7.5px;line-height:1.25;font-weight:700;background:#fff}
+.top>div{padding:2px 4px}
+.top .tc{text-align:center;color:var(--navy);border-inline:2px solid #333;font-weight:800;font-size:8.5px}
+.top .tc b{display:block;background:var(--red);color:#fff;font:400 24px/1.1 'Rozha One',serif;border:2px solid #fff;outline:2px solid var(--red);margin:2px 2px 1px}
+.hd{flex:none;display:grid;grid-template-columns:1fr 1.4fr 1fr;align-items:center;gap:4px;padding:3px 6px;background:linear-gradient(#ffe27a,#ffd23d);border-bottom:2px solid #333}
+.bx{text-align:center;font-weight:800;color:var(--red);font-size:11px;line-height:1.1}
+.pl{display:block;background:var(--navy);color:#fff;border-radius:12px;border:2px solid #fff;outline:2px solid var(--navy);font:400 17px/1.2 'Rozha One',serif;margin:2px 6px}
+.mn{text-align:center;position:relative}
+.br{font:400 8px 'Rozha One',serif;color:var(--navy);letter-spacing:1px}
+.mn h1{margin:0;font:400 clamp(26px,4.6vh,36px)/1.05 'Rozha One',serif;color:var(--red);-webkit-text-stroke:1.5px var(--navy)}
+.nv{position:absolute;top:50%;transform:translateY(-50%);background:#fffa;border:0;border-radius:50%;width:26px;height:26px;font-weight:800;color:var(--navy);font-size:16px;line-height:1}
+.sl{flex:none;background:var(--yel);text-align:center;font:800 9.5px Mukta;padding:2px;border-bottom:2px solid #333}
+@media (max-height:760px){.sl{display:none}}
+.g{flex:1;min-height:0;display:grid;grid-template-columns:46px repeat(var(--n),1fr);grid-template-rows:repeat(7,minmax(0,1fr));background:var(--frame,#2e7fb8)}
+.wd{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;color:#fff;font:400 clamp(11px,1.9vh,16px) 'Rozha One',serif;border-bottom:2px solid #fff;text-shadow:0 1px 2px #000}
+.wd.rs{background:#c62828}
+.wd svg{width:clamp(20px,4vh,34px);height:auto;filter:drop-shadow(0 2px 2px #0009)}
+.c{background:#fff;border:1px solid #777;min-height:0;display:grid;grid-template-columns:.9em 1fr .9em;grid-template-rows:auto minmax(18px,1fr) auto auto;font:700 clamp(6.3px,1.02vh,8.4px)/1.12 Mukta;position:relative;overflow:hidden}
+.c i{font-style:normal}
+.c.sun{background:var(--yel)}
+.c.hl{background:#ffe0e0}
+.c.e{background:#d9d2b8}
+.c.now{background:#fff3b0;box-shadow:inset 0 0 0 3px var(--red),0 0 12px 3px #ffb300;z-index:2;animation:glow 1.5s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:inset 0 0 0 3px var(--red),0 0 3px 0 #ffb300}}
+.c.now .dt{background:var(--red);color:#fff;-webkit-text-stroke:0;border-radius:50%;width:1.45em;height:1.45em;display:grid;place-items:center}
+.c.now .hex{background:var(--navy)}
+.nk{grid-column:1/3;padding:1px 0 0 2px}
+.hj{grid-column:3;font-size:.9em;color:#555;text-align:center}
+.vl,.vr{writing-mode:vertical-rl;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;height:100%;align-self:center;font-size:.95em}
+.vl{transform:rotate(180deg);color:var(--red)}
+.vr{color:#444}
+.dt,.hex{grid-column:2;grid-row:2;place-self:center;font:400 clamp(20px,3.9vh,31px)/1 'Rozha One',serif;color:var(--blue);-webkit-text-stroke:.7px var(--blue)}
+.hex{width:clamp(28px,4.8vh,38px);height:clamp(31px,5.3vh,42px);display:grid;place-items:center;background:var(--red);color:#fff;-webkit-text-stroke:0;font-size:clamp(16px,3vh,22px);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.tt{grid-column:1/4;text-align:center;padding:0 1px}
+.sp{grid-column:1/4;text-align:center;color:var(--red);padding:0 1px 1px;min-height:1em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.c.hl .tt{color:var(--red)}
+.hdl{flex:none;display:flex;align-items:center;justify-content:space-between;background:var(--navy);color:#fff;font:800 11px Mukta;padding:3px 8px;touch-action:none}
+.hdl button{background:var(--gold);color:var(--navy);border:0;border-radius:10px;padding:2px 12px;font:800 11px Mukta}
+.hdl span{animation:bob 1.6s infinite}
+@keyframes bob{50%{opacity:.5}}
+#sheet{position:fixed;left:0;right:0;bottom:0;max-width:560px;margin:auto;background:var(--card);color:#1a1a1a;border:2px solid #333;border-radius:16px 16px 0 0;padding:14px;transform:translateY(110%);transition:transform .3s;z-index:9;max-height:70%;overflow:auto;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+#sheet.on{transform:none}
+#sheet h2{margin:0 0 6px;font:400 22px 'Rozha One',serif;color:var(--red)}
+#sheet p{margin:3px 0;font-size:14px}
+.c4{background:linear-gradient(145deg,#ff6b6b,#b3121c);box-shadow:0 4px 0 #7a0c13,0 8px 10px #0004}
+.c5{background:linear-gradient(145deg,#a06bdc,#5b2a9e);box-shadow:0 4px 0 #3a1a68,0 8px 10px #0004}
+#app.no-top .top,#app.no-sl .sl,#app.no-hj .hj,#app.no-vrat .vl,#app.no-bh .vr,#app.no-pl .wd svg{display:none}
+#app.no-hr .c.hl{background:#fff}#app.no-hr .hex{background:var(--blue)}
+</style></head>
+<body>
+<div id="app" class="cal">
+<header><div class="lg" id="hl">🕉</div><div><b id="hn">VISHWAKARMA JI</b><small id="hs">पंचांग</small></div></header>
+<main>
+<section class="view on" id="v-cal"><div class="stage" id="stage"></div></section>
+<section class="view" id="v-jm"></section>
+<section class="view" id="v-nt"></section>
+</main>
+<nav>
+<button data-v="cal" class="on"><span class="ic c1"><svg viewBox="0 0 32 32"><rect x="5" y="7" width="22" height="20" rx="3.5" fill="#fff"/><path d="M5 10.5A3.5 3.5 0 018.5 7h15A3.5 3.5 0 0127 10.5V14H5z" fill="#ffd23d"/><rect x="10" y="3.5" width="3" height="7" rx="1.5" fill="#e8ecff" stroke="#141f63"/><rect x="19" y="3.5" width="3" height="7" rx="1.5" fill="#e8ecff" stroke="#141f63"/><g fill="#1f2f8f"><circle cx="10.5" cy="18.5" r="1.5"/><circle cx="16" cy="18.5" r="1.5"/><circle cx="21.5" cy="18.5" r="1.5"/><circle cx="10.5" cy="23" r="1.5"/><circle cx="16" cy="23" r="1.5" fill="#d3202a"/><circle cx="21.5" cy="23" r="1.5"/></g></svg></span>कैलेंडर</button>
+<button data-v="jm"><span class="ic c2"><svg viewBox="0 0 32 32"><g class="fl"><path d="M16 3c3.2 4.2 4.6 6.6 4.6 9.4a4.6 4.6 0 01-9.2 0C11.4 9.6 12.8 7.2 16 3z" fill="#ffe27a"/><path d="M16 9c1.5 2 2.2 3.2 2.2 4.5a2.2 2.2 0 01-4.4 0C13.8 12.2 14.5 11 16 9z" fill="#ff7a1a"/></g><path d="M3 18h26c0 6-5.5 10-13 10S3 24 3 18z" fill="#f2b632" stroke="#8a5a1f" stroke-width="1.2"/><ellipse cx="16" cy="18" rx="13" ry="2.4" fill="#ffe08a" stroke="#8a5a1f"/></svg></span>मुहूर्त · जयंती</button>
+<button data-v="nt"><span class="ic c3"><svg viewBox="0 0 32 32"><rect x="6" y="4" width="18" height="24" rx="3" fill="#fff"/><rect x="6" y="4" width="5" height="24" rx="2.5" fill="#bfe6cb"/><path d="M14 10h7M14 14.5h7M14 19h4.5" stroke="#2a8a4a" stroke-width="1.7" stroke-linecap="round"/><g class="pn2"><path d="M20.5 25.5l7.5-11.5 3 2-7.5 11.5-4.2 1.3z" fill="#ffd23d" stroke="#8a5a1f"/><path d="M19.3 29.8l1.2-4.3 3 2z" fill="#f5c6a0"/></g></svg></span>यादद्दाश्त</button>
+</nav>
+<div id="sheet"></div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+<script>
+let CFG={name:'VISHWAKARMA JI',sym:'🕉',slogan:'',swipe:true,nav:null},CE={};
+const $=s=>document.querySelector(s),dv=n=>String(n).replace(/\d/g,d=>'०१२३४५६७८९'[d]);
+const R=Math.PI/180,sn=x=>Math.sin(x*R),md=(a,b)=>((a%b)+b)%b;
+const WD=['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'];
+const MO=['जनवरी','फ़रवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितम्बर','अक्टूबर','नवम्बर','दिसम्बर'];
+const GR=['radial-gradient(circle at 35% 35%,#ffd23d,#f08a00)','radial-gradient(circle at 35% 35%,#9bb5ff,#3a3fa8)','radial-gradient(circle at 35% 35%,#ff9a5a,#b8321a)','radial-gradient(circle at 35% 35%,#8fd0ff,#2d4a78)','radial-gradient(circle at 35% 35%,#f4d9a8,#a8742f)','radial-gradient(circle at 35% 35%,#cfe3ff,#4a6ca8)','radial-gradient(circle at 35% 35%,#f5e0a0,#8a5a1f)'];
+const PL=[`<g stroke=#e65100 stroke-width=2 stroke-linecap=round><path d=M18,2v5M18,29v5M2,18h5M29,18h5M7,7l3,3M26,26l3,3M7,29l3,-3M26,10l3,-3 /></g><circle cx=18 cy=18 r=9 fill=#ffc107 stroke=#e65100 stroke-width=1.5 />`,`<circle cx=18 cy=18 r=16 fill=#3a49b8 stroke=#fff /><circle cx=16 cy=18 r=10 fill=#fff /><circle cx=21 cy=16 r=9 fill=#3a49b8 />`,`<circle cx=18 cy=18 r=15 fill=#d84315 stroke=#7f1d0a /><circle cx=12 cy=13 r=3 fill=#a52a0f /><circle cx=23 cy=21 r=4 fill=#a52a0f /><circle cx=13 cy=25 r=2 fill=#a52a0f />`,`<circle cx=18 cy=18 r=15 fill=#78909c stroke=#37474f /><circle cx=12 cy=14 r=3 fill=#546e7a /><circle cx=23 cy=20 r=4 fill=#546e7a /><circle cx=15 cy=26 r=2 fill=#546e7a />`,`<defs><clipPath id=cj><circle cx=18 cy=18 r=15 /></clipPath></defs><g clip-path=url(#cj)><rect width=36 height=36 fill=#ecc88f /><rect y=8 width=36 height=4 fill=#b9772f /><rect y=16 width=36 height=5 fill=#c98a45 /><rect y=25 width=36 height=3 fill=#a8662a /></g><circle cx=18 cy=18 r=15 fill=none stroke=#6d4318 /><ellipse cx=24 cy=22 rx=3 ry=1.6 fill=#c0392b />`,`<circle cx=18 cy=18 r=12 fill=#dbe9ff stroke=#5b86c9 stroke-width=1.5 /><circle cx=5 cy=6 r=1.3 fill=#fff /><circle cx=31 cy=7 r=1.3 fill=#fff /><circle cx=31 cy=30 r=1.3 fill=#fff /><circle cx=5 cy=30 r=1.3 fill=#fff />`,`<ellipse cx=18 cy=18 rx=17 ry=5 transform=rotate(-20,18,18) fill=none stroke=#8a5a1f stroke-width=2.5 /><circle cx=18 cy=18 r=9 fill=#f2cf7a stroke=#8a5a1f />`];
+const svg=i=>`<svg viewBox="0 0 36 36" width="36" height="36">${PL[i]}</svg>`;
+const NK='अश्विनी,भरणी,कृत्तिका,रोहिणी,मृगशिरा,आर्द्रा,पुनर्वसु,पुष्य,श्लेषा,मघा,पू.फा.,उ.फा.,हस्त,चित्रा,स्वाती,विशाखा,अनुराधा,ज्येष्ठा,मूल,पू.षा.,उ.षा.,श्रवण,धनिष्ठा,शतभिषा,पू.भा.,उ.भा.,रेवती'.split(',');
+const MS='वैशाख,ज्येष्ठ,आषाढ,श्रावण,भाद्रपद,आश्विन,कार्तिक,मार्गशीर्ष,पौष,माघ,फाल्गुन,चैत्र'.split(',');
+const TF={'चैत्र शुक्ल 1':'नव संवत्सर*','चैत्र शुक्ल 9':'राम नवमी*','चैत्र शुक्ल 15':'हनुमान जयंती','वैशाख शुक्ल 3':'अक्षय तृतीया','आषाढ शुक्ल 11':'देवशयनी एकादशी','आषाढ शुक्ल 15':'गुरु पूर्णिमा','श्रावण शुक्ल 15':'रक्षाबंधन*','भाद्रपद कृष्ण 8':'जन्माष्टमी*','भाद्रपद शुक्ल 4':'गणेश चतुर्थी*','आश्विन शुक्ल 1':'शारदीय नवरात्र','आश्विन शुक्ल 10':'दशहरा*','कार्तिक कृष्ण 4':'करवा चौथ','कार्तिक कृष्ण 13':'धनतेरस','कार्तिक कृष्ण 30':'दीपावली*','कार्तिक शुक्ल 1':'गोवर्धन पूजा','कार्तिक शुक्ल 11':'देवउठनी एकादशी','फाल्गुन कृष्ण 14':'महाशिवरात्रि*','फाल्गुन शुक्ल 15':'होली*','मार्गशीर्ष शुक्ल 11':'गीता जयंती','पौष कृष्ण 30':'पौषी अमावस्या','माघ शुक्ल 5':'बसंत पंचमी','माघ कृष्ण 30':'मौनी अमावस्या','माघ शुक्ल 15':'माघ पूर्णिमा','वैशाख शुक्ल 15':'बुद्ध पूर्णिमा','ज्येष्ठ शुक्ल 11':'निर्जला एकादशी','श्रावण शुक्ल 5':'नाग पंचमी','भाद्रपद शुक्ल 8':'राधाष्टमी','आश्विन शुक्ल 9':'महानवमी','आश्विन शुक्ल 15':'शरद पूर्णिमा','कार्तिक शुक्ल 2':'भाई दूज','कार्तिक शुक्ल 6':'छठ पूजा','कार्तिक शुक्ल 15':'कार्तिक पूर्णिमा','मार्गशीर्ष शुक्ल 15':'दत्तात्रेय जयंती','पौष कृष्ण 11':'सफला एकादशी'};
+const FX={'1-1':'नव वर्ष*','1-12':'विवेकानन्द जयंती','1-14':'मकर संक्रांति*','1-23':'नेताजी जयंती','1-26':'गणतंत्र दिवस*','2-19':'शिवाजी जयंती','4-14':'अम्बेडकर जयंती*','5-1':'मजदूर दिवस','8-15':'स्वतंत्रता दिवस*','9-5':'शिक्षक दिवस','9-17':'विश्वकर्मा पूजा*','10-2':'गांधी जयंती*','10-31':'सरदार पटेल जयंती','11-14':'बाल दिवस','12-1':'एड्स दिवस','12-3':'राजेन्द्र प्रसाद जयंती','12-6':'अम्बेडकर पुण्य तिथि','12-10':'मानव अधिकार दिवस','12-18':'गुरु घासीदास जयंती*','12-24':'उपभोक्ता दिवस','12-25':'क्रिसमस डे*','1-3':'सावित्रीबाई फुले जयंती','1-9':'प्रवासी भारतीय दिवस','1-24':'राष्ट्रीय बालिका दिवस','2-28':'विज्ञान दिवस','3-8':'महिला दिवस','3-23':'शहीद दिवस','4-7':'स्वास्थ्य दिवस','4-22':'पृथ्वी दिवस','6-5':'पर्यावरण दिवस','6-21':'योग दिवस','7-1':'डॉक्टर्स दिवस','8-29':'खेल दिवस','9-14':'हिन्दी दिवस','10-8':'वायुसेना दिवस','10-15':'कलाम जयंती','11-1':'छत्तीसगढ़ राज्योत्सव','11-26':'संविधान दिवस','12-4':'नौसेना दिवस','12-7':'झंडा दिवस','12-14':'ऊर्जा संरक्षण दिवस','12-15':'पटेल पुण्य तिथि','12-23':'किसान दिवस'};
+const SK=[[2,22,'चैत्र'],[3,21,'वैशाख'],[4,22,'ज्येष्ठ'],[5,22,'आषाढ'],[6,23,'श्रावण'],[7,23,'भाद्रपद'],[8,23,'आश्विन'],[9,23,'कार्तिक'],[10,22,'मार्गशीर्ष'],[11,22,'पौष'],[0,21,'माघ'],[1,20,'फाल्गुन']];
+function bh(y,m,d){const t=new Date(y,m,d);let b=null;for(const yy of[y-1,y])for(const s of SK){const st=new Date(yy,s[0],s[1]);if(st<=t&&(!b||st>b.st))b={st,n:s[2]}}return{d:Math.round((t-b.st)/864e5)+1,n:b.n}}
+let HF;try{HF=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'numeric',year:'numeric'})}catch(e){}
+const hj=(y,m,d)=>{try{const p=HF.formatToParts(new Date(y,m,d,12));return{d:+p.find(x=>x.type=='day').value,y:+p.find(x=>x.type=='year').value}}catch(e){return{d:'',y:1447}}};
+const C={};
+function raw(y,m,d){const k=y+'-'+m+'-'+d;if(C[k])return C[k];
+const t=(Date.UTC(y,m,d,1)-Date.UTC(2000,0,1,12))/864e5;
+const mo=a=>{const L=218.316+13.176396*a,M=134.963+13.064993*a,D=297.85+12.190749*a,g=357.528+.9856003*a;return L+6.289*sn(M)+1.274*sn(2*D-M)+.658*sn(2*D)+.214*sn(2*M)-.186*sn(g)};
+const su=a=>{const g=357.528+.9856003*a;return 280.46+.9856474*a+1.915*sn(g)+.02*sn(2*g)};
+const ay=23.853+.013972*(y-2000),ml=mo(t),el=md(ml-su(t),360),ti=Math.floor(el/12)+1,sid=md(ml-ay,360),nk=Math.floor(sid/13.3333);
+const sg=Math.floor(md(su(t-el/360*29.53)-ay,360)/30),kr=ti>15,n=kr?ti-15:ti,masa=MS[(sg+(kr?1:0))%12],pk=kr?'कृष्ण':'शुक्ल';
+const tn=n==15?(kr?'अमावस्या':'पूर्णिमा'):dv(n);
+const nm=(TF[masa+' '+pk+' '+(kr&&n==15?30:n)]||'').split('*'),fx=(FX[(m+1)+'-'+d]||'').split('*');
+const fe=[],hol=!!(nm[1]!==undefined&&nm[0]||fx[1]!==undefined&&fx[0]);
+if(nm[0])fe.push(nm[0]);if(fx[0])fe.push(fx[0]);
+let vr='';if(n==11)vr='एकादशी व्रत';else if(n==13)vr='प्रदोष व्रत';else if(kr&&n==4)vr='संकष्टी चतुर्थी';else if(n==15)vr=kr?'अमावस्या':'पूर्णिमा व्रत';
+const b=bh(y,m,d),h=hj(y,m,d);
+return C[k]={ti,n,kr,pk,masa,tn,nk,nkn:NK[nk],hol,fe,vr,b,h,tl:masa+' '+pk+' '+tn,tE:(ti*12-el)/12.19*24,nE:((nk+1)*13.3333-sid)/13.176*24}}
+function info(y,m,d){const f=raw(y,m,d),q=new Date(y,m,d-1),p=raw(q.getFullYear(),q.getMonth(),q.getDate()),o=Object.assign({},f);o.fe=f.fe.filter(n=>!p.fe.includes(n));o.vr=f.vr&&f.vr===p.vr?'':f.vr;o.hol=f.hol&&o.fe.length>0;(CE[(m+1)+'-'+d]||[]).concat(CE[y+'-'+(m+1)+'-'+d]||[]).forEach(x=>{o.fe.push(x.n);if(x.h)o.hol=true});return o}
+const ft=h=>{const t=(6.5+h)%24,hh=Math.floor(t),mm=String(Math.round((t-hh)*60)%60).padStart(2,'0');const p=t<4?'रात':t<7?'प्रातः':t<16?'दिन':t<19?'शाम':'रात';return dv((hh%12||12)+'।'+mm)+' '+p};
+const hm=h=>{const hh=Math.floor(h),mm=String(Math.round((h-hh)*60)%60).padStart(2,'0');return dv(hh+':'+mm)};
+function sun(y,m,d){const doy=Math.round((Date.UTC(y,m,d)-Date.UTC(y,0,0))/864e5),B=2*Math.PI*(doy-81)/364,eot=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B),dec=23.44*Math.sin(2*Math.PI*(doy-81)/365),lat=21.25,ha=Math.acos(-Math.tan(lat*R)*Math.tan(dec*R))/R/15,noon=12-(81.63-82.5)/15-eot/60,sr=noon-ha,ss=noon+ha,w=new Date(y,m,d).getDay(),sl=[8,2,7,5,6,4,3][w],a=sr+(sl-1)*(ss-sr)/8;return{sr,ss,ra:a,rb:a+(ss-sr)/8}}
+const dl=(y,m,dim,k,o)=>[1,8,15,22,Math.min(30,dim)].map(d=>dv(d)+'='+hm(sun(y,m,d)[k]-o).replace(':','।')).join(', ');
+const ml=(y,m,dim,k)=>{const a=[];for(let d=1;d<=dim;d++){const f=info(y,m,d);if(RULE[k].includes(f.nkn)&&![4,9,14].includes(f.n)&&!(f.kr&&f.n==15))a.push(dv(d))}return a.join(', ')||'—'};
+const SL='॥ हमारे विचारों का स्तर ही, हमारी निजी प्रसन्नता का स्तर निर्धारित करता है ॥';
+const T0=new Date(),TY=T0.getFullYear(),TM=T0.getMonth(),TD=T0.getDate();
+function events(days,from){const o=[],s=from||new Date(TY,TM,TD);for(let i=0;i<days;i++){const x=new Date(s.getFullYear(),s.getMonth(),s.getDate()+i),f=info(x.getFullYear(),x.getMonth(),x.getDate());f.fe.forEach(n=>o.push({x,n,h:f.hol,k:/जयंती|दिवस|पुण्य/.test(n)?'j':'f'}));if(f.vr)o.push({x,n:f.vr,h:0,k:'f'})}return o}
+const evRow=e=>`<div class="row${e.h?' h':''}"><div class="dd">${dv(e.x.getDate())}<small>${MO[e.x.getMonth()]} · ${WD[e.x.getDay()]}</small></div><div>${e.n}</div></div>`;
+const RULE={'विवाह':['रोहिणी','मृगशिरा','मघा','उ.फा.','हस्त','स्वाती','अनुराधा','मूल','उ.षा.','उ.भा.','रेवती'],'गृह प्रवेश':['रोहिणी','मृगशिरा','पुष्य','उ.फा.','अनुराधा','उ.षा.','धनिष्ठा','शतभिषा','उ.भा.','रेवती'],'वाहन क्रय':['अश्विनी','पुनर्वसु','पुष्य','हस्त','स्वाती','अनुराधा','श्रवण','धनिष्ठा','रेवती'],'नामकरण':['अश्विनी','रोहिणी','मृगशिरा','पुनर्वसु','पुष्य','उ.फा.','हस्त','चित्रा','स्वाती','अनुराधा','उ.षा.','श्रवण','धनिष्ठा','शतभिषा','उ.भा.','रेवती'],'व्यापार':['अश्विनी','पुष्य','हस्त','चित्रा','स्वाती','अनुराधा','श्रवण','धनिष्ठा','रेवती']};
+const dfix=r=>{const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode())if(/[0-9]/.test(n.nodeValue)&&!['TEXTAREA','STYLE','SCRIPT'].includes(n.parentNode.tagName))n.nodeValue=dv(n.nodeValue)};
+const evR=e=>`<div class="row${e.h?' h':''}${e.x.getTime()==new Date(TY,TM,TD).getTime()?' now':''}"><div class="dd">${dv(e.x.getDate())}<small>${MO[e.x.getMonth()]} · ${WD[e.x.getDay()]}</small></div><div>${e.n}${e.h?'<span class="tag">छुट्टी</span>':''}</div></div>`;
+function page(y,m){const el=document.createElement('div');el.className='page';
+const fs=new Date(y,m,1),dim=new Date(y,m+1,0).getDate(),off=fs.getDay(),cols=Math.ceil((off+dim)/7),b1=bh(y,m,1),b2=bh(y,m,dim),vs=m>=3?y+57:y+56;
+let h=`<div class="top"><div>सूर्य उदय – ता. ${dl(y,m,dim,'sr',0)} बजे।</div><div class="tc">भारतीय तारीख<br>${dv(b1.d)} ${b1.n} से ${dv(b2.d)} ${b2.n} तक<b>${dv(m+1)}</b></div><div>रेलवे घड़ी से सूर्य अस्त – ता. ${dl(y,m,dim,'ss',12)} बजे।</div></div><div class="hd"><div class="bx">ईसवी सन्<span class="pl">${dv(y)}</span></div><div class="mn"><button class="nv" style="left:0" data-f="-1">‹</button><button class="nv" style="right:0" data-f="1">›</button><div class="br">${CFG.sym} ${CFG.name}</div><h1>${MO[m]}</h1></div><div class="bx">विक्रम संवत्<span class="pl">${dv(vs)}</span></div></div><div class="sl">${CFG.slogan||SL}</div><div class="g" style="--n:${cols}">`;
+for(let r=0;r<7;r++){h+=`<div class="wd${r==0?' rs':''}">${svg(r)}${WD[r]}</div>`;
+for(let c=0;c<cols;c++){const d=c*7+r-off+1;if(d<1||d>dim){h+='<div class="c e"></div>';continue}
+const f=info(y,m,d),now=y==TY&&m==TM&&d==TD;
+h+=`<div class="c${r==0?' sun':''}${f.hol?' hl':''}${now?' now':''}" data-d="${d}"><i class="nk">${f.nkn} ${ft(f.nE)}</i><i class="hj">${dv(f.h.d)}</i><i class="vl">${f.vr}</i>${(r==0||f.hol)?`<b class="hex">${dv(d)}</b>`:`<b class="dt">${dv(d)}</b>`}<i class="vr">भार.${f.b.n} ${dv(f.b.d)}</i><i class="tt">${f.tl}</i><i class="sp">${[...f.fe,f.vr].filter(Boolean).join(' · ')}</i></div>`}}
+h+=`</div>`;
+el.innerHTML=h;dfix(el);return el}
+let cy=TY,cm=TM,cur,busy=0,tx=0,ty=0;const stage=$('#stage');
+function mount(y,m){cy=y;cm=m;stage.innerHTML='';cur=page(y,m);stage.append(cur)}
+function flip(dir){if(busy||!cur)return;busy=1;let ny=cy,nm=cm+dir;if(nm>11){nm=0;ny++}if(nm<0){nm=11;ny--}
+const nw=page(ny,nm),old=cur,fin=()=>{old.remove();cur=nw;cy=ny;cm=nm;busy=0};
+if(dir>0){nw.style.zIndex=1;old.style.zIndex=2;stage.append(nw);old.animate([{transform:'rotateX(0)',opacity:1},{transform:'rotateX(-100deg) translateY(-30px)',opacity:.2}],{duration:700,easing:'ease-in'}).onfinish=fin;old.style.transform='rotateX(-100deg)'}
+else{nw.style.zIndex=2;old.style.zIndex=1;stage.append(nw);nw.animate([{transform:'rotateX(-100deg)',opacity:.2},{transform:'rotateX(0)',opacity:1}],{duration:700,easing:'ease-out'}).onfinish=fin}}
+stage.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+stage.addEventListener('touchend',e=>{const dy=ty-e.changedTouches[0].clientY,dx=tx-e.changedTouches[0].clientX;if(CFG.swipe!==false&&Math.abs(dy)>55&&Math.abs(dy)>Math.abs(dx)*1.3)flip(dy>0?1:-1)});
+stage.addEventListener('wheel',e=>{if(CFG.swipe!==false&&Math.abs(e.deltaY)>40)flip(e.deltaY>0?1:-1)},{passive:true});
+stage.addEventListener('click',e=>{const f=e.target.closest('[data-f]');if(f){flip(+f.dataset.f);return}if(e.target.closest('[data-t]')){mount(TY,TM);return}const c=e.target.closest('.c[data-d]');if(c)sheet(cy,cm,+c.dataset.d)});
+function sheet(y,m,d){const f=info(y,m,d),s=sun(y,m,d),w=new Date(y,m,d).getDay();
+$('#sheet').innerHTML=`<h2>${dv(d)} ${MO[m]} ${dv(y)} · ${WD[w]}वार</h2><p>📿 <b>${f.tl}</b> (समाप्त ${ft(f.tE)})</p><p>⭐ नक्षत्र <b>${f.nkn}</b> (${ft(f.nE)} तक)</p><p>📅 भारतीय: ${f.b.n} ${dv(f.b.d)} · हिज़री ${dv(f.h.d)}</p><p>🌅 उदय ${hm(s.sr)} · 🌇 अस्त ${hm(s.ss)}</p><p>⚠️ राहुकाल ${hm(s.ra)}–${hm(s.rb)}</p>${f.fe.length||f.vr?`<p style="color:#d3202a"><b>🎉 ${[...f.fe,f.vr].filter(Boolean).join(' · ')}${f.hol?' (छुट्टी)':''}</b></p>`:''}`;dfix($('#sheet'));$('#sheet').classList.add('on')}
+document.addEventListener('click',e=>{if(!e.target.closest('#sheet')&&!e.target.closest('.c[data-d]'))$('#sheet').classList.remove('on')});
+let mt='विवाह',jt='a';
+function jm(){const T=[['a','सभी'],['h','छुट्टी'],['j','जयंती एवं दिवस'],['f','त्यौहार एवं व्रत'],['m','मुहूर्त']];
+let h=`<div class="chips">${T.map(([k,n])=>`<button class="${k==jt?'on':''}" data-j="${k}">${n}</button>`).join('')}</div>`;
+if(jt=='m'){let rows='';for(let i=0;i<120;i++){const x=new Date(TY,TM,TD+i),f=info(x.getFullYear(),x.getMonth(),x.getDate());if(RULE[mt].includes(f.nkn)&&![4,9,14].includes(f.n)&&!(f.kr&&f.n==15))rows+=`<div class="row"><div class="dd">${dv(x.getDate())}<small>${MO[x.getMonth()]} · ${WD[x.getDay()]}</small></div><div>${f.tl}<br><small>नक्षत्र ${f.nkn}</small></div></div>`}
+h+=`<div class="chips">${Object.keys(RULE).map(k=>`<button class="${k==mt?'on':''}" data-m="${k}">${k}</button>`).join('')}</div><div class="card"><h3>${mt} मुहूर्त – अगले ४ महीने</h3>${rows||'कोई तिथि नहीं'}</div>`}
+else{const L=events(366,new Date(TY,0,1)).filter(e=>jt=='a'||(jt=='h'?e.h:e.k==jt));let mm=-1,rows='';L.forEach(e=>{if(e.x.getMonth()!=mm){mm=e.x.getMonth();rows+=`<div class="mh">${MO[mm]} ${TY}</div>`}rows+=evR(e)});h+=`<div class="card"><h3>${T.find(t=>t[0]==jt)[1]} – पूरा साल</h3>${rows||'कोई इवेंट नहीं'}</div>`}
+$('#v-jm').innerHTML=h;dfix($('#v-jm'));const nw=$('#v-jm .row.now');if(nw)nw.scrollIntoView({block:'center'})}
+$('#v-jm').addEventListener('click',e=>{const a=e.target.closest('[data-j]'),b=e.target.closest('[data-m]');if(a){jt=a.dataset.j;jm()}if(b){mt=b.dataset.m;jm()}});
+function nt(){let v='';try{v=localStorage.getItem('vj_note')||''}catch(e){}
+$('#v-nt').innerHTML=`<div class="card"><h3>यादद्दाश्त</h3><textarea id="nta" style="min-height:320px" placeholder="यहाँ लिखें..."></textarea></div>`;
+const t=$('#nta');t.value=v;t.oninput=()=>{try{localStorage.setItem('vj_note',t.value)}catch(e){}}}
+function go(v){document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id=='v-'+v));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==v));$('#app').classList.toggle('cal',v=='cal');$('#sheet').classList.remove('on');$('#hs').textContent=v=='jm'?'मुहूर्त · जयंती · त्यौहार':'यादद्दाश्त';
+if(v=='jm')jm();if(v=='nt')nt();if(v=='cal'&&!cur)mount(TY,TM)}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
+go('cal');
+
+// ===== FIREBASE LIVE (admin panel se control) =====
+const FB={apiKey:"YOUR_API_KEY",authDomain:"YOUR_PROJECT.firebaseapp.com",projectId:"YOUR_PROJECT",storageBucket:"YOUR_PROJECT.appspot.com",messagingSenderId:"000000000000",appId:"YOUR_APP_ID"};
+const VAPID='YOUR_VAPID_KEY';
+const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const IC={cal:$('[data-v=cal] svg').outerHTML,diya:$('[data-v=jm] svg').outerHTML,note:$('[data-v=nt] svg').outerHTML,
+bell:'<svg viewBox="0 0 32 32"><path d="M16 4a7 7 0 00-7 7v6l-3 4h20l-3-4v-6a7 7 0 00-7-7z" fill="#ffd23d" stroke="#8a5a1f"/><circle cx="16" cy="25" r="3" fill="#fff"/></svg>',
+star:'<svg viewBox="0 0 32 32"><path d="M16 3l3.8 8.2 8.9 1-6.6 6 1.9 8.8L16 22.6 8 27l1.9-8.8-6.6-6 8.9-1z" fill="#ffd23d" stroke="#8a5a1f"/></svg>',
+gift:'<svg viewBox="0 0 32 32"><rect x="5" y="12" width="22" height="15" rx="2" fill="#fff"/><rect x="4" y="9" width="24" height="5" rx="1.5" fill="#ffd23d"/><path d="M16 9v18" stroke="#d3202a" stroke-width="3"/><path d="M16 9c-5-6-9 0-4 0M16 9c5-6 9 0 4 0" fill="none" stroke="#d3202a" stroke-width="2"/></svg>',
+clock:'<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#fff" stroke="#1f2f8f" stroke-width="2"/><path d="M16 9v7l5 3" stroke="#d3202a" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>'};
+const CL={blue:1,orange:2,green:3,red:4,purple:5};
+function buildNav(items){const nav=$('nav');nav.style.gridTemplateColumns='repeat('+items.length+',1fr)';
+nav.innerHTML=items.map(n=>`<button data-v="${n.id}"><span class="ic c${CL[n.color]||1}">${IC[n.icon]||IC.star}</span>${esc(n.label)}</button>`).join('');
+items.filter(n=>n.id[0]=='x'&&!$('#v-'+n.id)).forEach(n=>{const s=document.createElement('section');s.className='view';s.id='v-'+n.id;$('main').append(s)});
+nav.querySelectorAll('button').forEach(b=>b.onclick=()=>go(b.dataset.v));
+const a=$('.view.on');if(a){const b=nav.querySelector('[data-v="'+a.id.slice(2)+'"]');b&&b.classList.add('on')}}
+const og=go;go=function(v){const n=((CFG.nav)||[]).find(x=>x.id==v);if(n&&n.type=='link'&&n.url){window.open(n.url,'_blank');return}
+og(v);if(n&&v[0]=='x'){$('#hs').textContent=n.label;$('#v-'+v).innerHTML=`<div class="card"><h3>${esc(n.label)}</h3><div style="white-space:pre-wrap;font-size:15px;line-height:1.6">${esc(n.body)}</div></div>`;dfix($('#v-'+v))}};
+function applyCfg(c){const b=c.brand||{},t=c.theme||{},f=c.features||{},r=document.documentElement.style;
+CFG.name=b.name||CFG.name;CFG.sym=b.sym||CFG.sym;CFG.slogan=b.slogan||'';CFG.swipe=f.swipe!==false;CFG.nav=c.nav||null;
+['blue','navy','red','yel','gold'].forEach(k=>t[k]&&r.setProperty('--'+k,t[k]));t.frame&&r.setProperty('--frame',t.frame);
+[['top','no-top'],['slogan','no-sl'],['hijri','no-hj'],['vrat','no-vrat'],['bharatiya','no-bh'],['planets','no-pl'],['holidayRed','no-hr']].forEach(([k,cl])=>$('#app').classList.toggle(cl,f[k]===false));
+document.title=CFG.name;$('#hn').textContent=CFG.name;$('#hl').textContent=CFG.sym;
+if(c.nav)buildNav(c.nav.filter(n=>n.on!==false));mount(cy,cm)}
+function initPush(db){try{if(!('Notification' in window)||!firebase.messaging.isSupported())return;const m=firebase.messaging();
+const ask=async()=>{try{if(await Notification.requestPermission()!='granted')return;const reg=await navigator.serviceWorker.register('firebase-messaging-sw.js');const t=await m.getToken({vapidKey:VAPID,serviceWorkerRegistration:reg});if(t)db.collection('tokens').doc(t).set({at:Date.now()})}catch(e){}};
+if(Notification.permission=='granted')ask();else document.addEventListener('click',ask,{once:true});
+m.onMessage(p=>{const d=document.createElement('div');d.textContent=(p.notification.title||'')+' – '+(p.notification.body||'');d.style.cssText='position:fixed;top:10px;left:10px;right:10px;background:#2b2b86;color:#fff;padding:12px;border-radius:12px;z-index:99;font:700 14px Mukta';document.body.append(d);setTimeout(()=>d.remove(),5000)})}catch(e){}}
+try{const c=JSON.parse(localStorage.getItem('vj_cfg'));c&&applyCfg(c)}catch(e){}
+if(FB.apiKey!='YOUR_API_KEY'){firebase.initializeApp(FB);const db=firebase.firestore();
+db.doc('config/app').onSnapshot(s=>{if(s.exists){try{localStorage.setItem('vj_cfg',JSON.stringify(s.data()))}catch(e){}applyCfg(s.data())}});
+db.collection('events').onSnapshot(q=>{CE={};q.forEach(d=>{const e=d.data(),p=String(e.date).split('-').map(Number),k=e.yearly?p[1]+'-'+p[2]:p[0]+'-'+p[1]+'-'+p[2];(CE[k]=CE[k]||[]).push({n:e.name,h:e.hol})});mount(cy,cm)});
+initPush(db)}
+</script>
+</body></html>
